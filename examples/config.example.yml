@@ -24,6 +24,13 @@ solver:
   # Branch/mode finding
   max_modes: 6
   n_seeds: 18
+
+  # Normalize roots to a physical convention for exp(+i ω t), exp(i k x):
+  # - forward-going: Re(k) >= 0
+  # - passive attenuation: Im(k) >= 0
+  normalize_k:
+    enforce_re_nonneg: true
+    enforce_im_nonneg: true
   k_seed_re:
     # generate seeds across a range around an initial guess per frequency
     span_factor: 8.0
@@ -48,6 +55,10 @@ solver:
 
 output:
   csv: results/dispersion.csv
+  flexural_csv: results/flexural_branch.csv
   plots:
     re_k: figs/re_k.png
     im_k: figs/im_k.png
+    flexural:
+      re_k: figs/flexural_re_k.png
+      im_k: figs/flexural_im_k.png

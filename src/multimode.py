@@ -32,6 +32,8 @@ from sandwich_wavenumber import (
     solve_k_onefreq,
 )
 
+from selection import NormalizeKOpts, normalize_k
+
 
 @dataclass
 class MultiModeOpts:
@@ -48,6 +50,10 @@ class MultiModeOpts:
     # Root clustering + tracking
     cluster_tol_rel: float = 1e-3
     match_tol_rel: float = 5e-2
+
+    # Root normalization (recommended)
+    normalize_re_nonneg: bool = True
+    normalize_im_nonneg: bool = True
 
 
 def _rel_tol_dist(a: complex, b: complex, tol_rel: float) -> bool:
@@ -121,6 +127,7 @@ def solve_roots_one_frequency(
     solver_opts: SolverOpts,
     seeds: Iterable[complex],
     cluster_tol_rel: float,
+    normalize_opts: NormalizeKOpts | None = None,
 ) -> List[complex]:
     roots: List[complex] = []
     qualities: List[float] = []
@@ -128,6 +135,8 @@ def solve_roots_one_frequency(
     for k0 in seeds:
         try:
             k = solve_k_onefreq(omega, p, k0, solver_opts)
+            if normalize_opts is not None:
+                k = normalize_k(k, normalize_opts)
             q = abs(detM_sandwich(k, omega, p))
             roots.append(k)
             qualities.append(float(q))
@@ -210,12 +219,18 @@ def multimode_wavenumber(
         if prev is not None:
             seeds = list(prev[np.isfinite(prev.real)]) + seeds
 
+        norm = NormalizeKOpts(
+            enforce_re_nonneg=bool(mm.normalize_re_nonneg),
+            enforce_im_nonneg=bool(mm.normalize_im_nonneg),
+        )
+
         roots = solve_roots_one_frequency(
             omega,
             p,
             solver_opts=solver_opts,
             seeds=seeds,
             cluster_tol_rel=float(mm.cluster_tol_rel),
+            normalize_opts=norm,
         )
 
         # Track / assign into fixed columns

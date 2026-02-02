@@ -8,6 +8,7 @@ Usage:
 
 Outputs:
 - CSV: one row per (frequency, mode)
+- Optional: CSV for the bending-dominated (flexural) branch
 - Plots: Re{k}(f), Im{k}(f) per mode (optional if matplotlib installed)
 """
 
@@ -22,6 +23,7 @@ import numpy as np
 from config_io import load_config
 from multimode import MultiModeOpts, multimode_wavenumber
 from sandwich_wavenumber import Core, Params, Skin, SolverOpts
+from selection import pick_flexural_branch
 
 
 def _build_params(cfg: Dict[str, Any]) -> Params:
@@ -86,6 +88,7 @@ def _build_solver_opts(cfg: Dict[str, Any]) -> tuple[SolverOpts, MultiModeOpts]:
     # seeds sub-blocks
     re_cfg = scfg.get("k_seed_re", {})
     im_cfg = scfg.get("k_seed_im", {})
+    norm_cfg = scfg.get("normalize_k", {})
 
     mm = MultiModeOpts(
         max_modes=int(scfg.get("max_modes", 6)),
@@ -95,6 +98,8 @@ def _build_solver_opts(cfg: Dict[str, Any]) -> tuple[SolverOpts, MultiModeOpts]:
         im_values=tuple(float(x) for x in im_cfg.get("values", [0.0, 1.0, 5.0])),
         cluster_tol_rel=float(scfg.get("cluster_tol_rel", 1e-3)),
         match_tol_rel=float(scfg.get("match_tol_rel", 5e-2)),
+        normalize_re_nonneg=bool(norm_cfg.get("enforce_re_nonneg", True)),
+        normalize_im_nonneg=bool(norm_cfg.get("enforce_im_nonneg", True)),
     )
 
     return solver, mm
@@ -112,6 +117,23 @@ def save_csv(path: str | Path, freq: np.ndarray, k_modes: np.ndarray) -> None:
                 rows.append((float(f), int(m), float(k.real), float(k.imag)))
 
     header = "freq_hz,mode,k_real_rad_per_m,k_imag_per_m"
+    data = np.asarray(rows, dtype=float)
+    np.savetxt(path, data, delimiter=",", header=header, comments="")
+
+
+def save_flexural_csv(path: str | Path, freq: np.ndarray, k_modes: np.ndarray) -> None:
+    """Export a single bending-dominated branch (heuristic selection)."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    rows = []
+    for i, f in enumerate(freq):
+        k = pick_flexural_branch(k_modes[i, :])
+        if k is None:
+            continue
+        rows.append((float(f), float(np.real(k)), float(np.imag(k))))
+
+    header = "freq_hz,k_real_rad_per_m,k_imag_per_m"
     data = np.asarray(rows, dtype=float)
     np.savetxt(path, data, delimiter=",", header=header, comments="")
 
@@ -152,6 +174,43 @@ def save_plots(paths: Dict[str, Any], freq: np.ndarray, k_modes: np.ndarray) -> 
         plt.tight_layout()
         plt.savefig(im_path, dpi=200)
 
+    # Flexural branch plots (optional)
+    flex = paths.get("flexural", {})
+    if isinstance(flex, dict):
+        flex_re = flex.get("re_k")
+        flex_im = flex.get("im_k")
+    else:
+        flex_re = flex_im = None
+
+    if flex_re or flex_im:
+        k_flex = np.full(freq.shape, np.nan + 1j * np.nan)
+        for i in range(freq.size):
+            sel = pick_flexural_branch(k_modes[i, :])
+            if sel is not None:
+                k_flex[i] = sel
+
+        if flex_re:
+            plt.figure()
+            plt.plot(freq, np.real(k_flex), linewidth=1.8)
+            plt.grid(True)
+            plt.xlabel("Frequency (Hz)")
+            plt.ylabel("Re{k} (rad/m)")
+            plt.title("Flexural branch: dispersion")
+            Path(flex_re).parent.mkdir(parents=True, exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(flex_re, dpi=200)
+
+        if flex_im:
+            plt.figure()
+            plt.plot(freq, np.imag(k_flex), linewidth=1.8)
+            plt.grid(True)
+            plt.xlabel("Frequency (Hz)")
+            plt.ylabel("Im{k} (1/m)")
+            plt.title("Flexural branch: attenuation")
+            Path(flex_im).parent.mkdir(parents=True, exist_ok=True)
+            plt.tight_layout()
+            plt.savefig(flex_im, dpi=200)
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -169,6 +228,10 @@ def main() -> None:
     out = cfg.get("output", {})
     csv_path = out.get("csv", "results/dispersion.csv")
     save_csv(csv_path, freq, k_modes)
+
+    flex_csv = out.get("flexural_csv")
+    if flex_csv:
+        save_flexural_csv(flex_csv, freq, k_modes)
 
     plots = out.get("plots", {})
     save_plots(plots, freq, k_modes)
