@@ -1,0 +1,53 @@
+# Example configuration for dispersion + attenuation extraction
+
+freq:
+  start_hz: 20
+  stop_hz: 2000
+  n: 200
+
+panel:
+  skin1:
+    E: 70e9
+    nu: 0.33
+    rho: 2700
+    t: 1.0e-3
+    eta: 0.01
+  skin3: "same_as_skin1"   # or provide a full block like skin1
+  core:
+    E: 200e6
+    nu: 0.25
+    rho: 120
+    h: 20e-3
+    eta: 0.05
+
+solver:
+  # Branch/mode finding
+  max_modes: 6
+  n_seeds: 18
+  k_seed_re:
+    # generate seeds across a range around an initial guess per frequency
+    span_factor: 8.0
+    min_factor: 0.25
+  k_seed_im:
+    # add a few imaginary seeds (helps with damped/evanescent roots)
+    values: [0.0, 1.0, 5.0]
+
+  # Numerics
+  use_root: true
+  root_maxiter: 200
+  nm_maxiter: 2000
+  nm_xatol: 1e-10
+  nm_fatol: 1e-14
+  do_newton_polish: true
+  newton_iters: 6
+  dk_fd: 1e-6
+
+  # Root uniqueness/matching
+  cluster_tol_rel: 1e-3
+  match_tol_rel: 5e-2
+
+output:
+  csv: results/dispersion.csv
+  plots:
+    re_k: figs/re_k.png
+    im_k: figs/im_k.png

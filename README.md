@@ -11,7 +11,7 @@ Study notes + code for modeling and analyzing acoustic/elastic wave propagation 
 - `figs/`    – figures for docs
 - `refs/`    – papers / bibtex
 
-## Python wavenumber demo (ported from MATLAB)
+## Python wavenumber (ported from MATLAB)
 
 Install deps:
 
@@ -19,7 +19,7 @@ Install deps:
 python3 -m pip install -r requirements.txt
 ```
 
-Run demo:
+### Single-branch demo (tracking one mode)
 
 ```bash
 python3 src/demo_sandwich_wavenumber.py
@@ -27,6 +27,22 @@ python3 src/demo_sandwich_wavenumber.py
 
 Main implementation:
 - `src/sandwich_wavenumber.py`
+
+### Multi-mode extraction (multiple roots per frequency + clustering + tracking)
+
+Config-driven run (writes CSV + plots):
+
+```bash
+python3 src/run_dispersion.py --config examples/config.example.yml
+```
+
+Outputs (default):
+- `results/dispersion.csv` (freq, mode, Re{k}, Im{k})
+- `figs/re_k.png`, `figs/im_k.png`
+
+Multi-mode solver:
+- `src/multimode.py`
+- `src/config_io.py`
 
 ## Getting started
 Add your method choice (FEM/COMSOL, transfer matrix, spectral element, etc.) in `docs/`.
