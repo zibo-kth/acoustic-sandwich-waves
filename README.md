@@ -30,6 +30,10 @@ Main implementation:
 
 ### Multi-mode extraction (multiple roots per frequency + clustering + tracking)
 
+Physics conventions used in the code:
+- Time dependence: `exp(+i ω t)`
+- Thickness wavenumbers `qL,qT = sqrt(kL^2 - k^2)` use a **physical branch choice** enforcing `Im(q) >= 0` (and if `Im(q)=0`, `Re(q) >= 0`) to avoid non-physical exponential growth through the thickness.
+
 Config-driven run (writes CSV + plots):
 
 ```bash

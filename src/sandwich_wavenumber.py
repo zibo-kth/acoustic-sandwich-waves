@@ -104,13 +104,46 @@ def approx_static_bending_stiffness(p: Params) -> complex:
     return D1 + D3 + Dsep
 
 
-def _safe_sqrt(z: complex) -> complex:
-    """Principal square root, with numpy complex handling."""
-    return np.sqrt(z + 0j)
+def _sqrt_with_physical_branch(z: complex) -> complex:
+    """Square root with a physically-motivated branch choice.
+
+    Convention: time dependence exp(+i ω t).
+
+    We use thickness dependence exp(± i q y). With exp(+i ω t), a mode that
+    decays away from an interface in +y has Im(q) >= 0 because:
+      exp(i q y) = exp(i Re(q) y) * exp(-Im(q) y).
+
+    Therefore we pick the sqrt branch such that:
+    - Im(q) >= 0
+    - if Im(q) == 0, then Re(q) >= 0
+
+    This avoids non-physical exponential growth in thickness for evanescent
+    components when k is complex.
+    """
+    q = np.sqrt(z + 0j)
+
+    # Enforce Im(q) >= 0
+    if np.imag(q) < 0:
+        q = -q
+
+    # If purely real (or numerically close), enforce Re(q) >= 0
+    if abs(np.imag(q)) < 1e-15 and np.real(q) < 0:
+        q = -q
+
+    return q
 
 
 def M_sandwich(k: complex, omega: float, p: Params) -> np.ndarray:
-    """Build the 4x4 global matrix whose determinant is the dispersion equation."""
+    """Build the 4x4 global matrix whose determinant is the dispersion equation.
+
+    Assumptions / conventions
+    -------------------------
+    - Core: isotropic elastic solid, plane-strain kinematics in the x-y plane.
+      (Wave speeds use 3D Lamé parameters; this is consistent with plane strain.)
+    - Time dependence: exp(+i ω t)
+    - Thickness dependence uses exp(± i q y) with a branch choice enforcing
+      Im(q) >= 0 to avoid non-physical growth.
+    """
     # Complex moduli
     E1 = complex_modulus(p.skin1.E, p.skin1.eta)
     E3 = complex_modulus(p.skin3.E, p.skin3.eta)
@@ -141,14 +174,15 @@ def M_sandwich(k: complex, omega: float, p: Params) -> np.ndarray:
     mu = Ec / (2 * (1 + nuc))
     lam = Ec * nuc / ((1 + nuc) * (1 - 2 * nuc))
 
-    cL = _safe_sqrt((lam + 2 * mu) / rhoc)
-    cT = _safe_sqrt(mu / rhoc)
+    cL = _sqrt_with_physical_branch((lam + 2 * mu) / rhoc)
+    cT = _sqrt_with_physical_branch(mu / rhoc)
 
     kL = omega / cL
     kT = omega / cT
 
-    qL = _safe_sqrt(kL**2 - k**2)
-    qT = _safe_sqrt(kT**2 - k**2)
+    # Physical branch selection for thickness wavenumbers (see _sqrt_with_physical_branch)
+    qL = _sqrt_with_physical_branch(kL**2 - k**2)
+    qT = _sqrt_with_physical_branch(kT**2 - k**2)
 
     ELp, ELm = np.exp(1j * qL * h), np.exp(-1j * qL * h)
     ETp, ETm = np.exp(1j * qT * h), np.exp(-1j * qT * h)
