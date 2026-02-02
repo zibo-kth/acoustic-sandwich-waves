@@ -1,0 +1,17 @@
+# OS / editor
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv*/
+
+# Results / big artifacts
+results/
+data/
+*.log
+*.tmp
