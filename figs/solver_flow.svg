@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="450" y="32" font-family="Arial" font-size="20" text-anchor="middle" fill="#111">Algorithm: multi-mode root finding + tracking</text>
+
+  <defs>
+    <style>
+      .box { fill: #f7f7f7; stroke: #333; stroke-width: 2; }
+      .arrow { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#m); }
+      .t { font-family: Arial; font-size: 14px; fill: #111; }
+      .small { font-family: Arial; font-size: 12px; fill: #111; }
+    </style>
+    <marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="110" y="70" width="680" height="60" rx="10"/>
+  <text class="t" x="450" y="105" text-anchor="middle">Input: frequency grid fᵢ, material parameters, solver settings</text>
+
+  <path class="arrow" d="M 450 130 L 450 165"/>
+
+  <rect class="box" x="110" y="165" width="680" height="70" rx="10"/>
+  <text class="t" x="450" y="200" text-anchor="middle">For each frequency ωᵢ = 2π fᵢ</text>
+  <text class="small" x="450" y="222" text-anchor="middle">Generate complex seeds k₀ (incl. previous roots for continuation)</text>
+
+  <path class="arrow" d="M 450 235 L 450 270"/>
+
+  <rect class="box" x="110" y="270" width="680" height="80" rx="10"/>
+  <text class="t" x="450" y="304" text-anchor="middle">Solve det(M(k,ωᵢ)) = 0 from each seed</text>
+  <text class="small" x="450" y="326" text-anchor="middle">Root solver on [Re(det), Im(det)] = 0; fallback: minimize |det|²</text>
+
+  <path class="arrow" d="M 450 350 L 450 385"/>
+
+  <rect class="box" x="110" y="385" width="680" height="70" rx="10"/>
+  <text class="t" x="450" y="420" text-anchor="middle">Cluster roots (remove duplicates)</text>
+  <text class="small" x="450" y="442" text-anchor="middle">Keep smallest |det| in each cluster (relative tolerance)</text>
+
+  <path class="arrow" d="M 450 455 L 450 490"/>
+
+  <rect class="box" x="110" y="490" width="680" height="60" rx="10"/>
+  <text class="t" x="450" y="525" text-anchor="middle">Track modes across ωᵢ (nearest-neighbor matching in complex k-plane)</text>
+</svg>

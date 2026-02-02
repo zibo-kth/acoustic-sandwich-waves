@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360">
+  <rect width="100%" height="100%" fill="white"/>
+  <text x="450" y="28" font-family="Arial" font-size="20" text-anchor="middle" fill="#111">
+    Sandwich panel model (skins + core)
+  </text>
+
+  <!-- coordinate axes -->
+  <g stroke="#111" stroke-width="2" fill="none">
+    <line x1="90" y1="300" x2="240" y2="300"/>
+    <line x1="90" y1="300" x2="90" y2="150"/>
+  </g>
+  <text x="248" y="305" font-family="Arial" font-size="14" fill="#111">x</text>
+  <text x="82" y="145" font-family="Arial" font-size="14" fill="#111">y</text>
+
+  <!-- panel stack -->
+  <!-- bottom skin -->
+  <rect x="320" y="250" width="420" height="18" fill="#b3cde3" stroke="#1f77b4" stroke-width="2"/>
+  <text x="750" y="264" font-family="Arial" font-size="14" fill="#1f77b4">skin 1 (t₁)</text>
+
+  <!-- core -->
+  <rect x="320" y="140" width="420" height="110" fill="#ccebc5" stroke="#2ca02c" stroke-width="2"/>
+  <text x="750" y="200" font-family="Arial" font-size="14" fill="#2ca02c">core (h)</text>
+
+  <!-- top skin -->
+  <rect x="320" y="122" width="420" height="18" fill="#b3cde3" stroke="#1f77b4" stroke-width="2"/>
+  <text x="750" y="136" font-family="Arial" font-size="14" fill="#1f77b4">skin 3 (t₃)</text>
+
+  <!-- interface lines -->
+  <line x1="320" y1="250" x2="740" y2="250" stroke="#666" stroke-dasharray="6,5" stroke-width="1.5"/>
+  <line x1="320" y1="140" x2="740" y2="140" stroke="#666" stroke-dasharray="6,5" stroke-width="1.5"/>
+  <text x="300" y="255" font-family="Arial" font-size="12" fill="#333" text-anchor="end">y = 0</text>
+  <text x="300" y="145" font-family="Arial" font-size="12" fill="#333" text-anchor="end">y = h</text>
+
+  <!-- wave annotation -->
+  <path d="M 350 95 C 390 70, 430 120, 470 95 C 510 70, 550 120, 590 95 C 630 70, 670 120, 710 95" fill="none" stroke="#ff7f0e" stroke-width="3"/>
+  <text x="530" y="78" font-family="Arial" font-size="14" fill="#ff7f0e">in-plane propagation: exp(i k x)</text>
+
+  <!-- boundary conditions -->
+  <text x="320" y="325" font-family="Arial" font-size="14" fill="#111">
+    Interface conditions enforced via a 4×4 global matrix det(M(k,ω)) = 0
+  </text>
+</svg>
