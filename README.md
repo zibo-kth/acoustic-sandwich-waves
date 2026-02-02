@@ -11,5 +11,22 @@ Study notes + code for modeling and analyzing acoustic/elastic wave propagation 
 - `figs/`    – figures for docs
 - `refs/`    – papers / bibtex
 
+## Python wavenumber demo (ported from MATLAB)
+
+Install deps:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+Run demo:
+
+```bash
+python3 src/demo_sandwich_wavenumber.py
+```
+
+Main implementation:
+- `src/sandwich_wavenumber.py`
+
 ## Getting started
 Add your method choice (FEM/COMSOL, transfer matrix, spectral element, etc.) in `docs/`.
